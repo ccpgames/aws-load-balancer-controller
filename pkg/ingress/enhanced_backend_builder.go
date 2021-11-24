@@ -3,10 +3,11 @@ package ingress
 import (
 	"context"
 	"fmt"
+
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -114,19 +115,27 @@ func (b *defaultEnhancedBackendBuilder) Build(ctx context.Context, ing *networki
 	}
 	buildOpts.ApplyOptions(opts...)
 
-	conditions, err := b.buildConditions(ctx, ing.Annotations, backend.ServiceName)
+	conditions, err := b.buildConditions(ctx, ing.Annotations, backend.Service.Name)
 	if err != nil {
 		return EnhancedBackend{}, err
 	}
 
 	var action Action
-	if backend.ServicePort.String() == magicServicePortUseAnnotation {
-		action, err = b.buildActionViaAnnotation(ctx, ing.Annotations, backend.ServiceName)
+	if backend.Service.Port.Name == magicServicePortUseAnnotation {
+		action, err = b.buildActionViaAnnotation(ctx, ing.Annotations, backend.Service.Name)
 		if err != nil {
 			return EnhancedBackend{}, err
 		}
 	} else {
-		action = b.buildActionViaServiceAndServicePort(ctx, backend.ServiceName, backend.ServicePort)
+		var p intstr.IntOrString
+		if len(backend.Service.Port.Name) != 0 {
+			p.Type = intstr.String
+			p.StrVal = backend.Service.Port.Name
+		} else {
+			p.Type = intstr.Int
+			p.IntVal = backend.Service.Port.Number
+		}
+		action = b.buildActionViaServiceAndServicePort(ctx, backend.Service.Name, p)
 	}
 
 	var authCfg AuthConfig

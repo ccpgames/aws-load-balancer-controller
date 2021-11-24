@@ -1,11 +1,12 @@
 package equality
 
 import (
+	"testing"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 )
 
 func TestIgnoreFakeClientPopulatedFields(t *testing.T) {
@@ -20,7 +21,7 @@ func TestIgnoreFakeClientPopulatedFields(t *testing.T) {
 			ingressLeft: &networking.Ingress{
 				TypeMeta: v1.TypeMeta{
 					Kind:       "ingress",
-					APIVersion: "networking.k8s.io/v1beta1",
+					APIVersion: "networking.k8s.io/v1",
 				},
 				ObjectMeta: v1.ObjectMeta{
 					ResourceVersion: "0",
@@ -48,7 +49,7 @@ func TestIgnoreFakeClientPopulatedFields(t *testing.T) {
 			ingressLeft: &networking.Ingress{
 				TypeMeta: v1.TypeMeta{
 					Kind:       "ingress",
-					APIVersion: "networking.k8s.io/v1beta1",
+					APIVersion: "networking.k8s.io/v1",
 				},
 				ObjectMeta: v1.ObjectMeta{
 					ResourceVersion: "0",

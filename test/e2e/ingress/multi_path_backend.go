@@ -3,10 +3,12 @@ package ingress
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	"github.com/aws/aws-sdk-go/aws"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/algorithm"
@@ -14,7 +16,6 @@ import (
 	"sigs.k8s.io/aws-load-balancer-controller/test/framework"
 	"sigs.k8s.io/aws-load-balancer-controller/test/framework/utils"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sync"
 )
 
 type PathConfig struct {
@@ -257,8 +258,12 @@ func (s *multiPathBackendStack) buildIngressResource(ns *corev1.Namespace, ingID
 		ing.Spec.Rules[0].HTTP.Paths = append(ing.Spec.Rules[0].HTTP.Paths, networking.HTTPIngressPath{
 			Path: pathCFG.Path,
 			Backend: networking.IngressBackend{
-				ServiceName: backendSVC.Name,
-				ServicePort: intstr.FromInt(80),
+				Service: &networking.IngressServiceBackend{
+					Name: backendSVC.Name,
+					Port: networking.ServiceBackendPort{
+						Number: 80,
+					},
+				},
 			},
 		})
 	}

@@ -2,12 +2,14 @@ package ingress
 
 import (
 	"context"
+	"testing"
+
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -16,7 +18,6 @@ import (
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/annotations"
 	"sigs.k8s.io/aws-load-balancer-controller/pkg/equality"
 	testclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"testing"
 )
 
 func Test_defaultEnhancedBackendBuilder_Build(t *testing.T) {
@@ -69,8 +70,12 @@ func Test_defaultEnhancedBackendBuilder_Build(t *testing.T) {
 					},
 				},
 				backend: networking.IngressBackend{
-					ServiceName: "svc-1",
-					ServicePort: portHTTP,
+					Service: &networking.IngressServiceBackend{
+						Name: "svc-1",
+						Port: networking.ServiceBackendPort{
+							Name: portHTTP.String(),
+						},
+					},
 				},
 				loadBackendServices: true,
 				loadAuthConfig:      true,
@@ -119,8 +124,12 @@ func Test_defaultEnhancedBackendBuilder_Build(t *testing.T) {
 					},
 				},
 				backend: networking.IngressBackend{
-					ServiceName: "svc-1",
-					ServicePort: portHTTP,
+					Service: &networking.IngressServiceBackend{
+						Name: "svc-1",
+						Port: networking.ServiceBackendPort{
+							Name: portHTTP.String(),
+						},
+					},
 				},
 				loadBackendServices: true,
 				loadAuthConfig:      true,
@@ -179,8 +188,12 @@ func Test_defaultEnhancedBackendBuilder_Build(t *testing.T) {
 					},
 				},
 				backend: networking.IngressBackend{
-					ServiceName: "svc-1",
-					ServicePort: portHTTP,
+					Service: &networking.IngressServiceBackend{
+						Name: "svc-1",
+						Port: networking.ServiceBackendPort{
+							Name: portHTTP.String(),
+						},
+					},
 				},
 				loadBackendServices: true,
 				loadAuthConfig:      true,
@@ -232,8 +245,12 @@ func Test_defaultEnhancedBackendBuilder_Build(t *testing.T) {
 					},
 				},
 				backend: networking.IngressBackend{
-					ServiceName: "svc-2",
-					ServicePort: portHTTP,
+					Service: &networking.IngressServiceBackend{
+						Name: "svc-2",
+						Port: networking.ServiceBackendPort{
+							Name: portHTTP.String(),
+						},
+					},
 				},
 				loadBackendServices: true,
 				loadAuthConfig:      true,
@@ -275,8 +292,12 @@ func Test_defaultEnhancedBackendBuilder_Build(t *testing.T) {
 					},
 				},
 				backend: networking.IngressBackend{
-					ServiceName: "svc-2",
-					ServicePort: portHTTP,
+					Service: &networking.IngressServiceBackend{
+						Name: "svc-2",
+						Port: networking.ServiceBackendPort{
+							Name: portHTTP.String(),
+						},
+					},
 				},
 				loadBackendServices: true,
 				loadAuthConfig:      true,
@@ -301,8 +322,12 @@ func Test_defaultEnhancedBackendBuilder_Build(t *testing.T) {
 					},
 				},
 				backend: networking.IngressBackend{
-					ServiceName: "svc-2",
-					ServicePort: portHTTP,
+					Service: &networking.IngressServiceBackend{
+						Name: "svc-2",
+						Port: networking.ServiceBackendPort{
+							Name: portHTTP.String(),
+						},
+					},
 				},
 				loadBackendServices: false,
 				loadAuthConfig:      false,
@@ -342,8 +367,12 @@ func Test_defaultEnhancedBackendBuilder_Build(t *testing.T) {
 					},
 				},
 				backend: networking.IngressBackend{
-					ServiceName: "fake-my-svc",
-					ServicePort: intstr.FromString("use-annotation"),
+					Service: &networking.IngressServiceBackend{
+						Name: "fake-my-svc",
+						Port: networking.ServiceBackendPort{
+							Name: "use-annotation",
+						},
+					},
 				},
 				loadBackendServices: true,
 				loadAuthConfig:      true,
@@ -393,8 +422,12 @@ func Test_defaultEnhancedBackendBuilder_Build(t *testing.T) {
 					},
 				},
 				backend: networking.IngressBackend{
-					ServiceName: "fake-my-svc",
-					ServicePort: intstr.FromString("use-annotation"),
+					Service: &networking.IngressServiceBackend{
+						Name: "fake-my-svc",
+						Port: networking.ServiceBackendPort{
+							Name: "use-annotation",
+						},
+					},
 				},
 				loadBackendServices: true,
 				loadAuthConfig:      true,
@@ -454,8 +487,12 @@ func Test_defaultEnhancedBackendBuilder_Build(t *testing.T) {
 					},
 				},
 				backend: networking.IngressBackend{
-					ServiceName: "fake-my-svc",
-					ServicePort: intstr.FromString("use-annotation"),
+					Service: &networking.IngressServiceBackend{
+						Name: "fake-my-svc",
+						Port: networking.ServiceBackendPort{
+							Name: "use-annotation",
+						},
+					},
 				},
 				loadBackendServices: true,
 				loadAuthConfig:      true,
@@ -507,8 +544,12 @@ func Test_defaultEnhancedBackendBuilder_Build(t *testing.T) {
 					},
 				},
 				backend: networking.IngressBackend{
-					ServiceName: "fake-my-svc",
-					ServicePort: intstr.FromString("use-annotation"),
+					Service: &networking.IngressServiceBackend{
+						Name: "fake-my-svc",
+						Port: networking.ServiceBackendPort{
+							Name: "use-annotation",
+						},
+					},
 				},
 				loadBackendServices: true,
 				loadAuthConfig:      true,
@@ -550,8 +591,12 @@ func Test_defaultEnhancedBackendBuilder_Build(t *testing.T) {
 					},
 				},
 				backend: networking.IngressBackend{
-					ServiceName: "fake-my-svc",
-					ServicePort: intstr.FromString("use-annotation"),
+					Service: &networking.IngressServiceBackend{
+						Name: "fake-my-svc",
+						Port: networking.ServiceBackendPort{
+							Name: "use-annotation",
+						},
+					},
 				},
 				loadBackendServices: true,
 				loadAuthConfig:      true,
